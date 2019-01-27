@@ -1,0 +1,538 @@
+/**
+Систем за банкарско работење Problem 2
+Треба да се креира апликација за банка која ќе управуваа со сметките на повеќе корисниците и ќе врши трансакции помеѓу нив. Банката работи само со долари и притоа сите суми на пари се претставуваат како стрингови со знакот $ на крај, и точка помеѓу бројот на центи и бројот на долари без празни места. Бројот на центи треба да се состои од две цифри без разлика на износот.
+
+Пример:
+
+10 долари  10.00$
+15 долари и 50 центи 15.50$
+
+За потребите на ваквата апликација треба да се напишат класите Account,Transaction и Bank. Класата Account претставува една сметка на еден корисник и треба да ги чува следните податоци:
+
+Име на корисникот,
+единствен идентификационен број (long)
+тековното салдо на сметката.
+Оваа класа исто така треба да ги имплементира и следниве методи
+
+Account(String name, String balance) – конструктор со параметри (id-то треба да го генерирате сами со помош на класата java.util.Random)
+getBalance():String
+getName():String
+getId():long
+setBalance(String balance)
+toString():String – враќа стринг во следниот формат, \n означува нов ред
+
+Name:Andrej Gajduk\n Balance:20.00$\n
+
+Класата Transaction претставува трансакција (префрлување пари од една на друга сметка), од страна на банката за што честопати се наплаќа провизија. За почеток треба да се напише класата Transaction со податочни членови за идентификационите броеви на две сметки, едната од која се одземаат парите и друга на која се додаваат парите, текстуален опис и износ на трансакцијата.
+
+За оваа класа треба да ги имплементирате методите:
+
+Transaction(long fromId, long toId, Stirng description, String amount) – конструктор со параметри
+getAmount():String
+getFromId():long
+getToId():long
+Оваа класа треба да е immutable, а можете и да ја направите и апстрактна бидејќи не е наменета директно да се користи туку само како основна класа за изведување на други класи.
+
+Како што споменавме претходно банката наплаќа провизија за одредени трансакции. Има два типа на провизија, фискна сума и процент. Кај фиксна сума за било која трансакција без разлика на износот на трансакцијата се наплаќа исто провизија (пример 10$). Кај процент за секој еден долар од трансакцијата банката наплаќа одреден процент провизија (на пример 5%, или 5 центи на секој долар – процентите секогаш се целобројни и провизија се наплаќа само на цели долари).
+
+За да се прави разлика меѓу различните типови на провизија, треба да напишете уште две класи кои ќе наследуваат од Transaction кои треба да ги именувате FlatAmountProvisionTransaction и FlatPercentProvisionTransaction.
+
+Првата класа FlatAmountProvisionTransaction треба да содржи соодветен конструктор
+
+FlatAmountProvisionTransaction(long fromId, long toId,String amount, String flatProvision) кој го иницијализира полето за опис на "FlatAmount" и соодветен get метод
+getFlatAmount():String
+Слично и класата FlatPercentProvisionTransaction треба да има соодветен конструктор
+
+FlatPercentProvisionTransaction (long fromId, long toId, String amount, int centsPerDolar) кој го иницијализира полето за опис на "FlatPercent" и соодветен get метод
+getPercent():int
+Исто така треба да се преоптовари equals(Object o):boolean методот и за двете класи.
+
+За крај треба да ја имплементирате класата Bank која ги чува сметките од своите корисници и дополнително врши трансакции. Класата освен сметките на своите корисници, треба да ги чува и сопственото име и вкупната сума на трансфери како и вкупната наплатена провизија од страна на банката за сите трансакции.
+
+Класата Bank треба да ги нуди следните методи:
+
+Bank(String name, Account accounts[]) – конструктор со соодветните параметри (направете сопствена копија на низата од сметки)
+makeTransaction(Transaction t):boolean – врши проверка дали корисникот ги има потребните средства на сметка и дали и двете сметки на кои се однесува трансакцијата се нависитина во банката и ако и двата услови се исполнето ја извршува трансакцијата и враќа true, во спротивно враќа false
+totalTransfers():String – ја дава вкупната сума на пари кои се префрлени во сите трансакции до сега
+totalProvision():String – ја дава вкупната провизија наплатена од банката за сите извршени трансакции до сега
+toString():String - го враќа името на банката во посебна линија во формат
+
+Name:Banka na RM\n \n по што следат податоците за сите корисници.
+
+Провизијата се наплаќа така што на основната сума на трансакцијата се додава вредноста не провизијата и таа сума се одзема од првата сметка.
+
+За сите класи да се напишат соодветни equals и hashCode методи.
+*/
+
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class BankTester {
+
+    static class Account {
+        String name;
+        long id;
+        String balance;
+
+        public Account (String name, String balance) {
+
+            this.name = name;
+            this.balance= ( balance );
+            Random random=new Random (  );
+            this.id=random.nextLong ();
+        }
+
+        public String getName () {
+            return name;
+        }
+
+        public long getId () {
+            return id;
+        }
+
+        public String getBalance () {
+
+            return balance;
+
+
+        }
+        public Double getDoubleBalance()
+        {
+            this.balance = balance.substring ( 0,balance.length ()-1 );
+
+            return Double.parseDouble (this.balance );
+        }
+
+        public void setBalance (double balance) {
+            DecimalFormat decimalFormat=new DecimalFormat ( "#0.00" );
+            this.balance = decimalFormat.format ( balance )+"$";
+        }
+
+        @Override
+        public String toString () {
+            return "Name: "+getName ()+"\n"+"Balance: "+getBalance ()+"\n";
+        }
+
+        @Override
+        public boolean equals (Object o) {
+            if (this == o) return true;
+            if (o == null || getClass () != o.getClass ()) return false;
+
+            Account account = (Account) o;
+
+            if (id != account.id) return false;
+            if (name != null ? !name.equals ( account.name ) : account.name != null) return false;
+            return balance != null ? balance.equals ( account.balance ) : account.balance == null;
+        }
+
+        @Override
+        public int hashCode () {
+            int result = name != null ? name.hashCode () : 0;
+            result = 31 * result + (int) (id ^ (id >>> 32));
+            result = 31 * result + (balance != null ? balance.hashCode () : 0);
+            return result;
+        }
+    }
+
+    abstract static class Transaction{
+        private final long fromId;
+        private final long toId;
+        private final String description;
+        private final String amount;
+
+        public Transaction (long fromId, long toId, String description, String amount) {
+
+            this.fromId = fromId;
+            this.toId = toId;
+            this.description = description;
+            //DecimalFormat decimalFormat=new DecimalFormat ( "#0.00" );
+            this.amount = amount;
+        }
+
+        public long getFromId () {
+            return fromId;
+        }
+
+        public long getToId () {
+            return toId;
+        }
+
+        public String getAmount () {
+            return amount;
+
+        }
+        public double getValueAmount(){
+            return Double.parseDouble ( amount.substring ( 0,amount.length ()-1 ) );
+        }
+        abstract double getProvision();
+        @Override
+        public boolean equals (Object o) {
+            if (this == o) return true;
+            if (o == null || getClass () != o.getClass ()) return false;
+
+            Transaction that = (Transaction) o;
+
+            if (fromId != that.fromId) return false;
+            if (toId != that.toId) return false;
+            if (description != null ? !description.equals ( that.description ) : that.description != null)
+                return false;
+            return amount != null ? amount.equals ( that.amount ) : that.amount == null;
+        }
+
+        @Override
+        public int hashCode () {
+            int result = (int) (fromId ^ (fromId >>> 32));
+            result = 31 * result + (int) (toId ^ (toId >>> 32));
+            result = 31 * result + (description != null ? description.hashCode () : 0);
+            result = 31 * result + (amount != null ? amount.hashCode () : 0);
+            return result;
+        }
+
+        public String getDescription () {
+            return description;
+        }
+    }
+    static class FlatAmountProvisionTransaction extends Transaction{
+        String flatProvision;
+
+        public FlatAmountProvisionTransaction (long fromId, long toId, String amount,String flatProvision) {
+            super ( fromId, toId, "FlatAmount", amount );
+            this.flatProvision=flatProvision;
+        }
+
+        public String getFlatAmount () {
+            return flatProvision;
+        }
+
+        double getValueFlatAmount(){
+            return Double.parseDouble ( flatProvision.substring ( 0,flatProvision.length ()-1 ) );
+        }
+        // proveri dali trebit substring od amount i flat provision
+        @Override
+        double getProvision () {
+            return  getValueFlatAmount ();
+        }
+
+        @Override
+        public boolean equals (Object o) {
+            if (this == o) return true;
+            if (o == null || getClass () != o.getClass ()) return false;
+            if (!super.equals ( o )) return false;
+
+            FlatAmountProvisionTransaction that = (FlatAmountProvisionTransaction) o;
+
+            return flatProvision != null ? flatProvision.equals ( that.flatProvision ) : that.flatProvision == null;
+        }
+
+        @Override
+        public int hashCode () {
+            int result = super.hashCode ();
+            result = 31 * result + (flatProvision != null ? flatProvision.hashCode () : 0);
+            return result;
+        }
+    }
+
+    static class FlatPercentProvisionTransaction extends Transaction{
+        int centsPerDolar;
+        public FlatPercentProvisionTransaction (long fromId, long toId,String amount,int centsPerDolar) {
+            super ( fromId, toId, "FlatPercet", amount );
+            this.centsPerDolar=centsPerDolar;
+        }
+
+        public int getPercent () {
+            return centsPerDolar;
+        }
+        // ne sum sigurna za nacinot na presmetka,proveri formula
+        @Override
+        double getProvision () {
+            return (centsPerDolar/100)*getValueAmount ();
+        }
+
+        @Override
+        public boolean equals (Object o) {
+            if (this == o) return true;
+            if (o == null || getClass () != o.getClass ()) return false;
+            if (!super.equals ( o )) return false;
+
+            FlatPercentProvisionTransaction that = (FlatPercentProvisionTransaction) o;
+
+            return centsPerDolar == that.centsPerDolar;
+        }
+
+        @Override
+        public int hashCode () {
+            int result = super.hashCode ();
+            result = 31 * result + centsPerDolar;
+            return result;
+        }
+    }
+
+
+    static class Bank implements Comparable<Account>{
+        Account[] account;
+        String name;
+        double totalTransfers;
+        double totalProvision;
+        boolean result=true;
+
+        public Bank (String name,Account[] account) {
+            this.account=account.clone ();
+            this.name = name;
+            this.totalProvision=0;
+            this.totalTransfers=0;
+        }
+
+        boolean makeTransaction(Transaction t) {
+            long toId=t.getToId ();
+            long fromId=t.getFromId ();
+            boolean result=true;
+
+            for(int i=0;i<account.length;i++){
+                if(account[i].getId ()!=toId){
+                    result=false;
+                }
+                if(account[i].getId ()!=fromId){
+                    result=false;
+                }
+
+                if(account[i].getDoubleBalance ()<t.getValueAmount ()+t.getProvision ()){
+                    return false;
+                }
+
+                if(account[i].getId ()==fromId){
+
+                    if((account[i].getDoubleBalance ()>=t.getValueAmount ()+t.getProvision ())){
+                        totalProvision+=t.getProvision ();
+                        totalTransfers+=t.getValueAmount ();
+                        account[i].setBalance ( account[i].getDoubleBalance ()-t.getValueAmount ()-t.getProvision () );
+
+                    }
+
+                }
+                if(account[i].getId ()==toId){
+                    account[i].setBalance ( account[i].getDoubleBalance ()+t.getValueAmount () );
+                    result=true;
+                }
+            }
+
+            return result;
+        }
+
+        @Override
+        public int compareTo (Account o) {
+            for(int i=0;i<=account.length;i++){
+                if(o.getId ()==account[i].getId ())
+                    return 1;
+            }
+            return 0;
+        }
+        public String totalTransfers(){
+            DecimalFormat format=new DecimalFormat ( "#0.00" );
+            return format.format (  totalTransfers)+"$";
+        }
+        public String totalProvision(){
+            DecimalFormat format=new DecimalFormat ( "#0.00" );
+            return format.format ( totalProvision )+"$";
+        }
+
+        public Account[] getAccounts () {
+            return account;
+        }
+
+        public String getName () {
+            return name;
+        }
+
+        @Override
+        public String toString () {
+            StringBuilder stringBuilder=new StringBuilder (  );
+            for(int i=0;i<account.length;i++){
+                stringBuilder.append ( account[i].toString ());
+            }
+            return "Name: "+ getName ()+"\n\n"+stringBuilder;
+        }
+        @Override
+        public boolean equals (Object o) {
+            if (this == o) return true;
+            if (o == null || getClass () != o.getClass ()) return false;
+
+            Bank bank = (Bank) o;
+
+            if (Double.compare ( bank.totalTransfers, totalTransfers ) != 0) return false;
+            if (Double.compare ( bank.totalProvision, totalProvision ) != 0) return false;
+            // Probably incorrect - comparing Object[] arrays with Arrays.equals
+            if (!Arrays.equals ( account, bank.account )) return false;
+            return name != null ? name.equals ( bank.name ) : bank.name == null;
+        }
+
+        @Override
+        public int hashCode () {
+            int result;
+            long temp;
+            result = Arrays.hashCode ( account );
+            result = 31 * result + (name != null ? name.hashCode () : 0);
+            temp = Double.doubleToLongBits ( totalTransfers );
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            temp = Double.doubleToLongBits ( totalProvision );
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            return result;
+        }
+    }
+
+
+
+    public static void main(String[] args) {
+        Scanner jin = new Scanner(System.in);
+        String test_type = jin.nextLine();
+        switch (test_type) {
+            case "typical_usage":
+                testTypicalUsage(jin);
+                break;
+            case "equals":
+                testEquals();
+                break;
+        }
+        jin.close();
+    }
+
+    private static void testEquals() {
+        Account a1 = new Account("Andrej", "20.00$");
+        Account a2 = new Account("Andrej", "20.00$");
+        Account a3 = new Account("Andrej", "30.00$");
+        Account a4 = new Account("Gajduk", "20.00$");
+        List<Account> all = Arrays.asList(a1, a2, a3, a4);
+        if (!(a1.equals(a1)&&!a1.equals(a2)&&!a2.equals(a1)&&!a3.equals(a1)
+                && !a4.equals(a1)
+                && !a1.equals(null))) {
+            System.out.println("Your account equals method does not work properly.");
+            return;
+        }
+        Set<Long> ids = all.stream().map(Account::getId).collect(Collectors.toSet());
+        if (ids.size() != all.size()) {
+            System.out.println("Different accounts have the same IDS. This is not allowed");
+            return;
+        }
+        FlatAmountProvisionTransaction fa1 = new FlatAmountProvisionTransaction(10, 20, "20.00$", "10.00$");
+        FlatAmountProvisionTransaction fa2 = new FlatAmountProvisionTransaction(20, 20, "20.00$", "10.00$");
+        FlatAmountProvisionTransaction fa3 = new FlatAmountProvisionTransaction(20, 10, "20.00$", "10.00$");
+        FlatAmountProvisionTransaction fa4 = new FlatAmountProvisionTransaction(10, 20, "50.00$", "50.00$");
+        FlatAmountProvisionTransaction fa5 = new FlatAmountProvisionTransaction(30, 40, "20.00$", "10.00$");
+        FlatPercentProvisionTransaction fp1 = new FlatPercentProvisionTransaction(10, 20, "20.00$", 10);
+        FlatPercentProvisionTransaction fp2 = new FlatPercentProvisionTransaction(10, 20, "20.00$", 10);
+        FlatPercentProvisionTransaction fp3 = new FlatPercentProvisionTransaction(10, 10, "20.00$", 10);
+        FlatPercentProvisionTransaction fp4 = new FlatPercentProvisionTransaction(10, 20, "50.00$", 10);
+        FlatPercentProvisionTransaction fp5 = new FlatPercentProvisionTransaction(10, 20, "20.00$", 30);
+        FlatPercentProvisionTransaction fp6 = new FlatPercentProvisionTransaction(30, 40, "20.00$", 10);
+        if (fa1.equals(fa1) &&
+                !fa2.equals(null) &&
+                fa2.equals(fa1) &&
+                fa1.equals(fa2) &&
+                fa1.equals(fa3) &&
+                !fa1.equals(fa4) &&
+                !fa1.equals(fa5) &&
+                !fa1.equals(fp1) &&
+                fp1.equals(fp1) &&
+                !fp2.equals(null) &&
+                fp2.equals(fp1) &&
+                fp1.equals(fp2) &&
+                fp1.equals(fp3) &&
+                !fp1.equals(fp4) &&
+                !fp1.equals(fp5) &&
+                !fp1.equals(fp6)) {
+            System.out.println("Your transactions equals methods do not work properly.");
+            return;
+        }
+        Account accounts[] = new Account[]{a1, a2, a3, a4};
+        Account accounts1[] = new Account[]{a2, a1, a3, a4};
+        Account accounts2[] = new Account[]{a1, a2, a3};
+        Account accounts3[] = new Account[]{a1, a2, a3, a4};
+
+        Bank b1 = new Bank("Test", accounts);
+        Bank b2 = new Bank("Test", accounts1);
+        Bank b3 = new Bank("Test", accounts2);
+        Bank b4 = new Bank("Sample", accounts);
+        Bank b5 = new Bank("Test", accounts3);
+
+        if (!(b1.equals(b1) &&
+                !b1.equals(null) &&
+                !b1.equals(b2) &&
+                !b2.equals(b1) &&
+                !b1.equals(b3) &&
+                !b3.equals(b1) &&
+                !b1.equals(b4) &&
+                b1.equals(b5))) {
+            System.out.println("Your bank equals method do not work properly.");
+            return;
+        }
+        accounts[2] = a1;
+        if (!b1.equals(b5)) {
+            System.out.println("Your bank equals method do not work properly.");
+            return;
+        }
+        long from_id = a2.getId();
+        long to_id = a3.getId();
+        Transaction t = new FlatAmountProvisionTransaction(from_id, to_id, "3.00$", "3.00$");
+        b1.makeTransaction(t);
+        if (b1.equals(b5)) {
+            System.out.println("Your bank equals method do not work properly.");
+            return;
+        }
+        b5.makeTransaction(t);
+        if (!b1.equals(b5)) {
+            System.out.println("Your bank equals method do not work properly.");
+            return;
+        }
+        System.out.println("All your equals methods work properly.");
+    }
+
+    private static void testTypicalUsage(Scanner jin) {
+        String bank_name = jin.nextLine();
+        int num_accounts = jin.nextInt();
+        jin.nextLine();
+        Account accounts[] = new Account[num_accounts];
+        for (int i = 0; i < num_accounts; ++i)
+            accounts[i] = new Account(jin.nextLine(), jin.nextLine());
+        Bank bank = new Bank(bank_name, accounts);
+        while (true) {
+            String line = jin.nextLine();
+            switch (line) {
+                case "stop":
+                    return;
+                case "transaction":
+                    String descrption = jin.nextLine();
+                    String amount = jin.nextLine();
+                    String parameter = jin.nextLine();
+                    int from_idx = jin.nextInt();
+                    int to_idx = jin.nextInt();
+                    jin.nextLine();
+                    Transaction t = getTransaction(descrption, from_idx, to_idx, amount, parameter, bank);
+                    System.out.println("Transaction amount: " + t.getAmount());
+                    System.out.println("Transaction description: " + t.getDescription());
+                    System.out.println("Transaction successful? " + bank.makeTransaction(t));
+                    break;
+                case "print":
+                    System.out.println(bank.toString());
+                    System.out.println("Total provisions: " + bank.totalProvision());
+                    System.out.println("Total transfers: " + bank.totalTransfers());
+                    System.out.println();
+                    break;
+            }
+        }
+    }
+
+    private static Transaction getTransaction(String description, int from_idx, int to_idx, String amount, String o, Bank bank) {
+        switch (description) {
+            case "FlatAmount":
+                return new FlatAmountProvisionTransaction(bank.getAccounts()[from_idx].getId(),
+                        bank.getAccounts()[to_idx].getId(), amount, o);
+            case "FlatPercent":
+                return new FlatPercentProvisionTransaction(bank.getAccounts()[from_idx].getId(),
+                        bank.getAccounts()[to_idx].getId(), amount, Integer.parseInt(o));
+        }
+        return null;
+    }
+
+
+}
+
