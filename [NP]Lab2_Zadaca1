@@ -21,12 +21,17 @@ toString() - методот, каде броевите се заокружени
 Да се дефинира класа InvalidColumnNumberException која што наследува од класата Exception и при фрлање на исклучок се добива порака "Invalid column number"
 
 
+
+Покрај класата DoubleMatrix треба да напишете дополнително уште една класа која ќе служи за вчитување на матрица од реални броеви од влезен тек на податоци. Оваа класа треба да се вика MatrixReader и во неа треба да имате еден public static метод за вчитување на матрица од реални броеви од InputStream
+
+read(InputStream input):DoubleMatrix - вчитува матрица од реални броеви од input зададена во следниот формат: Во првата линија има два цели броеви кои кажуваат колку редови и колони има матрицата, а во наредните редови се дадени елементите на матрицата по редови, одделени со едно или повеќе празни места
+*/
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Scanner;
+import java.util.*;
 
 public class DoubleMatrixTester {
      static final class DoubleMatrix{
@@ -105,13 +110,24 @@ public class DoubleMatrixTester {
              }
              return suma;
          }
-         double[] toSortedArray () {
-             return Arrays.stream(matrix)
-                     .flatMapToDouble(row -> Arrays.stream(row))
-                     .boxed()
-                     .sorted(Comparator.reverseOrder())
-                     .mapToDouble(i -> i.doubleValue())
-                     .toArray();
+      
+         double[] toSortedArray(){
+             Double[] niza = new Double[this.rows ()*this.columns ()];
+             int k=0;
+             for(int i=0;i<matrix.length;i++){
+                 for(int j=0;j<matrix[0].length;j++){
+                    niza[k]= matrix[i][j];
+                    k++;
+                 }
+             }
+             Arrays.sort ( niza,Collections.reverseOrder () );
+                double resenie[] = new double[rows ()*columns ()];
+             for(int m=0;m<this.rows ()*this.columns ();m++){
+                 resenie[m]=niza[m].doubleValue ();
+             }
+             return resenie;
+
+
          }
 
          @Override
@@ -366,7 +382,3 @@ static class MatrixReader{
     }
 }
 
-Покрај класата DoubleMatrix треба да напишете дополнително уште една класа која ќе служи за вчитување на матрица од реални броеви од влезен тек на податоци. Оваа класа треба да се вика MatrixReader и во неа треба да имате еден public static метод за вчитување на матрица од реални броеви од InputStream
-
-read(InputStream input):DoubleMatrix - вчитува матрица од реални броеви од input зададена во следниот формат: Во првата линија има два цели броеви кои кажуваат колку редови и колони има матрицата, а во наредните редови се дадени елементите на матрицата по редови, одделени со едно или повеќе празни места
-*/
